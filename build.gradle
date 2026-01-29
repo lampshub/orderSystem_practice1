@@ -1,0 +1,72 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.5.10'
+	id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'com.beyond23'
+version = '0.0.1-SNAPSHOT'
+description = 'ordetSystem project for Spring Boot'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(17)
+	}
+}
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+
+
+//    db 드라이버 : mariaDB, mysql, oracle 등
+    runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
+//    db 관리 기술 : jdbc, mybatis, jpa(spring data jpa)
+    implementation 'org.springframework.boot:spring-boot-starter-data-jdbc'
+    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.4'
+//    스프링jpa 의존성
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+//    값 검증(validation)을 위한 의존성
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+
+//	로그인을 위한 security 의존성 -> 모든 api에 대한 로그인 요청(인증) (회원가입,로그인도 인증을 요청-> filter계층차원에서 예외처리해둬야함)
+//  security의존성을 적용하자마자, 모든 api요청에 대해 로그인을 요구(인증Authentication객체의 생성여부확인)
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+//	jwt토큰 관련 라이브러리 추가
+    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
+// 	토큰의 JSON 인코딩/디코딩, 직렬화/파싱 에 필요
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+
+
+//    batch의존성추가
+    implementation 'org.springframework.boot:spring-boot-starter-batch'
+
+
+//    파일처리를 위한 aws 의존성 추가
+    implementation 'software.amazon.awssdk:s3:2.29.50'
+
+
+
+
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
