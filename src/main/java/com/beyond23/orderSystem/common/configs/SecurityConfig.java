@@ -21,8 +21,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
 
-//이 파일이 filterChain
-// 26.01.23 오후수업
+//filterChain
 @Configuration
 @EnableMethodSecurity   //PreAuthorize어노테이션을 사용하기 위한 설정 (Controller에서 사용)
 public class SecurityConfig {
@@ -35,9 +34,7 @@ public class SecurityConfig {
         this.jwtAuthenticationHandler = jwtAuthenticationHandler;
     }
 
-    //    내가 만든 클래스와 객체는 @Component, 외부 클래스(라이브러리)를 활용한 객체는 @Configuration+@Bean
-//    @Component는 클래스 위에 붙여 클래스기반의 객체를 싱글톤객체로 생성
-//    @Bean은 메서드 위에 붙여 Return되는 객체를 싱글톤객체로 생성
+//    내가 만든 클래스와 객체는 @Component, 외부 클래스(라이브러리)를 활용한 객체는 @Configuration+@Bean
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity
@@ -52,7 +49,7 @@ public class SecurityConfig {
                 .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(e->e.authenticationEntryPoint(jwtAuthenticationHandler))
 //                지정한 특정 url을 제외한 모든 요청에 대해서 authenticated(인증처리)하겠다 라는 의미   //filter체인으로 돌아오면 여기
-                .authorizeHttpRequests(a->a.requestMatchers("/author/create","/author/login").permitAll().anyRequest().authenticated())
+                .authorizeHttpRequests(a->a.requestMatchers("/member/create","/member/doLogin").permitAll().anyRequest().authenticated())
                 .build();
     }
 
@@ -72,7 +69,7 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
-    //여기서 Bean을 쓰
+
     @Bean
     public PasswordEncoder pwEncoder(){
         return PasswordEncoderFactories.createDelegatingPasswordEncoder();

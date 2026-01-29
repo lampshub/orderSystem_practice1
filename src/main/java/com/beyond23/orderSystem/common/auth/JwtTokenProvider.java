@@ -18,7 +18,7 @@ import java.util.Date;
 @Component
 public class JwtTokenProvider {
 
-    @Value("${jwt.secretKey}") //yml에 있는 코드를 가져옴
+    @Value("${jwt.secretKey}")
     private String st_secret_key;
 
     @Value("${jwt.expiration}")

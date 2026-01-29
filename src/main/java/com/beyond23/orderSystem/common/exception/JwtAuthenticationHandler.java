@@ -27,7 +27,7 @@ public class JwtAuthenticationHandler implements AuthenticationEntryPoint {
     @Override   //Controller에서 사용하는 에러 처리와 다름. 토큰필터 에러시 처리.
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
 //        startline + header조립
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);    //401 상태코드 세팅
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);    //401 상태코드
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
 
