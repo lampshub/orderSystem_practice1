@@ -33,9 +33,6 @@ dependencies {
 
 //    db 드라이버 : mariaDB, mysql, oracle 등
     runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
-//    db 관리 기술 : jdbc, mybatis, jpa(spring data jpa)
-    implementation 'org.springframework.boot:spring-boot-starter-data-jdbc'
-    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.4'
 //    스프링jpa 의존성
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 
@@ -53,14 +50,8 @@ dependencies {
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
 
 
-//    batch의존성추가
-    implementation 'org.springframework.boot:spring-boot-starter-batch'
-
-
 //    파일처리를 위한 aws 의존성 추가
     implementation 'software.amazon.awssdk:s3:2.29.50'
-
-
 
 
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
