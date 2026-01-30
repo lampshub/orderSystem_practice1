@@ -1,5 +1,6 @@
 package com.beyond23.orderSystem.member.domain;
 
+import com.beyond23.orderSystem.common.domain.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -12,7 +13,7 @@ import java.time.LocalDateTime;
 @Getter @ToString
 @AllArgsConstructor
 @NoArgsConstructor
-public class Member {
+public class Member extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

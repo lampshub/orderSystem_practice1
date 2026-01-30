@@ -30,9 +30,6 @@ dependencies {
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
 
-
-//    db 드라이버 : mariaDB, mysql, oracle 등
-    runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
 //    스프링jpa 의존성
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 

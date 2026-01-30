@@ -35,7 +35,7 @@ public class SecurityConfig {
     }
 
 //    내가 만든 클래스와 객체는 @Component, 외부 클래스(라이브러리)를 활용한 객체는 @Configuration+@Bean
-    @Bean
+    @Bean       //filterChain로직에 어떻게 처리할건지.
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity
                 .cors(c->c.configurationSource(corsConfigurationSource()))
@@ -49,7 +49,7 @@ public class SecurityConfig {
                 .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(e->e.authenticationEntryPoint(jwtAuthenticationHandler))
 //                지정한 특정 url을 제외한 모든 요청에 대해서 authenticated(인증처리)하겠다 라는 의미   //filter체인으로 돌아오면 여기
-                .authorizeHttpRequests(a->a.requestMatchers("/member/create","/member/doLogin").permitAll().anyRequest().authenticated())
+                .authorizeHttpRequests(a->a.requestMatchers("/member/create","/member/doLogin","/product/list").permitAll().anyRequest().authenticated())
                 .build();
     }
 

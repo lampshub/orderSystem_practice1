@@ -1,5 +1,6 @@
 package com.beyond23.orderSystem.product.domains;
 
+import com.beyond23.orderSystem.common.domain.BaseTimeEntity;
 import com.beyond23.orderSystem.member.domain.Member;
 import jakarta.persistence.*;
 import lombok.*;
@@ -12,7 +13,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class Product {
+public class Product extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -32,7 +33,7 @@ public class Product {
     @CreationTimestamp
     private LocalDateTime createdTime;
 
-//    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-//    orderingDetail 과 연결
-
+    @OneToMany(mappedBy = "member_id", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = )
+    private Member member
 }

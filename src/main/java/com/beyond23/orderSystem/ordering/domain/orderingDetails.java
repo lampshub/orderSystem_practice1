@@ -1,6 +1,5 @@
-package com.beyond23.orderSystem.member.orderingDetails.domains;
+package com.beyond23.orderSystem.ordering.domain;
 
-import com.beyond23.orderSystem.member.domain.Member;
 import com.beyond23.orderSystem.ordering.domains.Ordering;
 import com.beyond23.orderSystem.product.domains.Product;
 import jakarta.persistence.*;

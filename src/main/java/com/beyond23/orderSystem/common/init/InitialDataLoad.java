@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 @Component
-@Transactional
+@Transactional      //서버 키자마자 admin 계정 생성됨.
 public class InitialDataLoad implements CommandLineRunner {
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
@@ -29,7 +29,7 @@ public class InitialDataLoad implements CommandLineRunner {
                         .name("admin")
                         .email("admin@naver.com")
                         .role(Role.ADMIN)
-                        .password(passwordEncoder.encode("1234"))
+                        .password(passwordEncoder.encode("12341234"))
                         .build());
     }
 }

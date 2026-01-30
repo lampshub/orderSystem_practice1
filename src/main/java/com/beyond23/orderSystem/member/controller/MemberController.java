@@ -7,6 +7,7 @@ import com.beyond23.orderSystem.member.dtos.MemberCreateDto;
 import com.beyond23.orderSystem.member.dtos.MemberDetailDto;
 import com.beyond23.orderSystem.member.dtos.MemberListDto;
 import com.beyond23.orderSystem.member.dtos.MemberLoginDto;
+import com.beyond23.orderSystem.member.dtos.MemberLoginResDto;
 import com.beyond23.orderSystem.member.repository.MemberRepository;
 import com.beyond23.orderSystem.member.service.MemberService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,8 +42,8 @@ public class MemberController {
 
     @GetMapping("/list")
     @PreAuthorize("hasRole('ADMIN')")
-    public List<MemberListDto> list(){
-        List<MemberListDto> dtoList = memberService.list();
+    public List<MemberDetailDto> list(){
+        List<MemberDetailDto> dtoList = memberService.list();
         return dtoList;
     }
 
@@ -64,16 +65,20 @@ public class MemberController {
     @GetMapping("/myinfo")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> myinfo(@AuthenticationPrincipal String principal) {
-        System.out.println(principal);
-        MemberDetailDto dto = memberService.myinfo();
+        MemberDetailDto dto = memberService.myinfo(principal);
         return ResponseEntity.status(HttpStatus.OK).body(dto);
     }
 
     @PostMapping("/doLogin")
     public ResponseEntity<?> login(@RequestBody MemberLoginDto dto){
         Member member = memberService.login(dto);
-        String token = jwtTokenProvider.createToken(member);    //토큰생성 및 리턴
-        return ResponseEntity.ok().body("accessToken : "+ token);
+        String accesstoken = jwtTokenProvider.createToken(member);    //토큰생성 및 리턴
+//        refresh토큰 생성
+        MemberLoginResDto memberLoginResDto = MemberLoginResDto.builder()
+                .accessToken(accesstoken)
+                .refreshToken(null)
+                .build();
+        return ResponseEntity.status(HttpStatus.OK).body(memberLoginResDto);
     }
 
 
