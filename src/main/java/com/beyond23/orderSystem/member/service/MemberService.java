@@ -55,9 +55,9 @@ public class MemberService {
 
     public MemberDetailDto myinfo() {
         String email = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString(); //filter에서 가져온 토큰에서 받아온 email
-        Optional<Member> opt_author = memberRepository.findByEmail(email);
-        Member author = opt_author.orElseThrow(() -> new NoSuchElementException("없는 entity"));
-        MemberDetailDto dto = MemberDetailDto.fromEntity(author);
+        Optional<Member> optMember = memberRepository.findByEmail(email);
+        Member member = optMember.orElseThrow(() -> new NoSuchElementException("없는 entity"));
+        MemberDetailDto dto = MemberDetailDto.fromEntity(member);
         return dto;
     }
 

@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-@Controller
+@RestController
 @RequestMapping("/member")
 public class MemberController {
     private final MemberService memberService;
@@ -35,7 +35,6 @@ public class MemberController {
 
     @PostMapping("/create")
     public ResponseEntity<?> create(@RequestBody MemberCreateDto dto){
-        memberService.save(dto);
         Long memberId = memberService.save(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(memberId);
     }
@@ -63,6 +62,7 @@ public class MemberController {
     }
 
     @GetMapping("/myinfo")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> myinfo(@AuthenticationPrincipal String principal) {
         System.out.println(principal);
         MemberDetailDto dto = memberService.myinfo();
@@ -70,11 +70,10 @@ public class MemberController {
     }
 
     @PostMapping("/doLogin")
-    public String login(@RequestBody MemberLoginDto dto){
+    public ResponseEntity<?> login(@RequestBody MemberLoginDto dto){
         Member member = memberService.login(dto);
-//        토큰생성 및 리턴
-        String token = jwtTokenProvider.createToken(member);
-        return token;
+        String token = jwtTokenProvider.createToken(member);    //토큰생성 및 리턴
+        return ResponseEntity.ok().body("accessToken : "+ token);
     }
 
 

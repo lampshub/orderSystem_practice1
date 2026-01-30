@@ -5,6 +5,8 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.data.annotation.CreatedDate;
 
+import java.time.LocalDateTime;
+
 @Builder
 @Entity
 @Getter @ToString
@@ -24,6 +26,12 @@ public class Member {
     @Builder.Default
     private Role role = Role.USER;
 
-//    private CreatedDate createTime;
+    @CreationTimestamp
+    private LocalDateTime createdTime;
+
+//    @OneToMany(mappedBy = "member", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+//    @Builder.Default
+//    product, ordering 과 연결
+
 
 }
