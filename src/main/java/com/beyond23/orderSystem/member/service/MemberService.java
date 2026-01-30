@@ -7,6 +7,7 @@ import com.beyond23.orderSystem.member.dtos.MemberListDto;
 import com.beyond23.orderSystem.member.dtos.MemberLoginDto;
 import com.beyond23.orderSystem.member.repository.MemberRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -20,14 +21,17 @@ public class MemberService {
 
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
+
     @Autowired
     public MemberService(MemberRepository memberRepository, PasswordEncoder passwordEncoder) {
         this.memberRepository = memberRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
-    public Long save(MemberCreateDto dto){
-        if(memberRepository.findByEmail(dto.getEmail()).isPresent()){
+//    create, doLogin, list, myinfo, detail/1
+
+    public Long save(MemberCreateDto dto) {
+        if (memberRepository.findByEmail(dto.getEmail()).isPresent()) {
             throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
         }
         Member member = dto.toEntity(passwordEncoder.encode(dto.getPassword()));
@@ -36,9 +40,6 @@ public class MemberService {
         return memberDb.getId();
     }
 
-    public void login(MemberLoginDto dto){
-
-    }
 
     public List<MemberListDto> list(){
         List<MemberListDto> dto = memberRepository.findAll().stream().map(a->MemberListDto.fromEntity(a)).collect(Collectors.toList());
@@ -52,5 +53,28 @@ public class MemberService {
         return dto;
     }
 
+    public MemberDetailDto myinfo() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString(); //filter에서 가져온 토큰에서 받아온 email
+        Optional<Member> opt_author = memberRepository.findByEmail(email);
+        Member author = opt_author.orElseThrow(() -> new NoSuchElementException("없는 entity"));
+        MemberDetailDto dto = MemberDetailDto.fromEntity(author);
+        return dto;
+    }
+
+    public Member login(MemberLoginDto dto) {
+        Optional<Member> optMember = memberRepository.findByEmail(dto.getEmail());
+        boolean check = true;
+        if (!optMember.isPresent()) {
+            check = false;
+        } else {
+            if (!passwordEncoder.matches(dto.getPassword(), optMember.get().getPassword())) {
+                check = false;
+            }
+        }
+        if(!check){
+            throw new IllegalArgumentException("이메일 또는 비밀번호가 일치하지 않습니다.");
+        }
+        return optMember.get();
+    }
 
 }

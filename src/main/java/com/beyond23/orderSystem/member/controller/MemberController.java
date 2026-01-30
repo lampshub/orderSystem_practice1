@@ -1,15 +1,19 @@
 package com.beyond23.orderSystem.member.controller;
 
+import com.beyond23.orderSystem.common.auth.JwtTokenProvider;
 import com.beyond23.orderSystem.common.dtos.CommonErrorDto;
+import com.beyond23.orderSystem.member.domain.Member;
 import com.beyond23.orderSystem.member.dtos.MemberCreateDto;
 import com.beyond23.orderSystem.member.dtos.MemberDetailDto;
 import com.beyond23.orderSystem.member.dtos.MemberListDto;
+import com.beyond23.orderSystem.member.dtos.MemberLoginDto;
 import com.beyond23.orderSystem.member.repository.MemberRepository;
 import com.beyond23.orderSystem.member.service.MemberService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,12 +24,14 @@ import java.util.NoSuchElementException;
 @RequestMapping("/member")
 public class MemberController {
     private final MemberService memberService;
-    private final MemberRepository memberRepository;
+    private final JwtTokenProvider jwtTokenProvider;
     @Autowired
-    public MemberController(MemberService memberService, MemberRepository memberRepository) {
+    public MemberController(MemberService memberService, MemberRepository memberRepository, JwtTokenProvider jwtTokenProvider) {
         this.memberService = memberService;
-        this.memberRepository = memberRepository;
+        this.jwtTokenProvider = jwtTokenProvider;
     }
+
+//    create, doLogin, list, myinfo, detail/1
 
     @PostMapping("/create")
     public ResponseEntity<?> create(@RequestBody MemberCreateDto dto){
@@ -35,18 +41,14 @@ public class MemberController {
     }
 
     @GetMapping("/list")
-    @PreAuthorize("hasRole('admin')")
+    @PreAuthorize("hasRole('ADMIN')")
     public List<MemberListDto> list(){
         List<MemberListDto> dtoList = memberService.list();
         return dtoList;
     }
 
-//    @GetMapping("/myinfo")  //로그인된 토큰값으로 ??
-//    public ResponseEntity<?> myinfo(){
-//    }
-
     @GetMapping("/detail/{id}")
-    @PreAuthorize("hasRole('admin')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> detail(@PathVariable Long id){
         try {
             MemberDetailDto dto = memberService.detail(id);
@@ -60,6 +62,20 @@ public class MemberController {
         }
     }
 
+    @GetMapping("/myinfo")
+    public ResponseEntity<?> myinfo(@AuthenticationPrincipal String principal) {
+        System.out.println(principal);
+        MemberDetailDto dto = memberService.myinfo();
+        return ResponseEntity.status(HttpStatus.OK).body(dto);
+    }
+
+    @PostMapping("/doLogin")
+    public String login(@RequestBody MemberLoginDto dto){
+        Member member = memberService.login(dto);
+//        토큰생성 및 리턴
+        String token = jwtTokenProvider.createToken(member);
+        return token;
+    }
 
 
 
