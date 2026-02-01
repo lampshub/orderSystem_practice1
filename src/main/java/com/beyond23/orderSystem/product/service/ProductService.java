@@ -4,15 +4,29 @@ import com.beyond23.orderSystem.member.domain.Member;
 import com.beyond23.orderSystem.member.repository.MemberRepository;
 import com.beyond23.orderSystem.product.domains.Product;
 import com.beyond23.orderSystem.product.dtos.ProductCreateDto;
-import com.beyond23.orderSystem.product.dtos.ProductDetailDto;
-import com.beyond23.orderSystem.product.dtos.ProductListDto;
+import com.beyond23.orderSystem.product.dtos.ProductResDto;
+import com.beyond23.orderSystem.product.dtos.ProductSearchDto;
 import com.beyond23.orderSystem.product.repository.ProductRepository;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
+import org.springframework.transaction.annotation.Transactional;
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
@@ -20,81 +34,74 @@ import java.util.Optional;
 public class ProductService {
     private final ProductRepository productRepository;
     private final MemberRepository memberRepository;
-//    private final S3Client = s3Client;
+    private final S3Client s3Client;
+//    yml파일에서 bucket1 정보 연결
+    @Value("${aws.s3.bucket1}")
+    private String bucket;
+
     @Autowired
-    public ProductService(ProductRepository productRepository, MemberRepository memberRepository) {
+    public ProductService(ProductRepository productRepository, MemberRepository memberRepository, S3Client s3Client) {
         this.productRepository = productRepository;
         this.memberRepository = memberRepository;
+        this.s3Client = s3Client;   //이미지등록시 필요
     }
+
 
     public Long save(ProductCreateDto dto){
         String email = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
-        Member member = memberRepository.findByEmail(email).orElseThrow(()-> new EntityNotFoundException("찾는 이메일이 없습니다"));
-        Product product = dto.toEntity(member);
-        productRepository.save(product);
-            return product.getId();
+        Member member = memberRepository.findByEmail(email).orElseThrow(()-> new EntityNotFoundException("member is not found"));
+        Product product = productRepository.save(dto.toEntity(member));
+        if(dto.getProductImage() != null){
+            String fileName = "product-" + product.getId() + "-" + dto.getProductImage().getOriginalFilename(); //이미지 여러개일시 for문으로 List에 담아야함
+            //      aws s3버킷에 파일 업로드를 할 요청정보를 담는 객체
+            PutObjectRequest request = PutObjectRequest.builder()
+                    .bucket(bucket)
+                    .key(fileName)  //이름이 중복되면 엎어씌어짐
+                    .contentType(dto.getProductImage().getContentType())
+                    .build();
+            try{
+                s3Client.putObject(request, RequestBody.fromBytes(dto.getProductImage().getBytes()));
+            }catch (IOException e){
+                throw new RuntimeException(e);
+            }
+            String imgUrl = s3Client.utilities().getUrl(a->a.bucket(bucket).key(fileName)).toExternalForm();
+            product.updateProfileImageUrl(imgUrl);
+        }
+        return product.getId();
     }
 
-    public ProductListDto detail(Long id){
-        Optional<Product> optProduct = productRepository.findById(id);
-        Product product = optProduct.orElseThrow(()->new NoSuchElementException("찾는 상품의id가 존재하지 않습니다."));
-        ProductListDto dto = ProductListDto.fromEntity(product);
-        return dto;
+
+    @Transactional(readOnly = true)
+    public Page<ProductResDto> findAll(Pageable pageable, ProductSearchDto searchDto){
+//        동적인 검색 조건을 코드로 조립해서 조회하는 방식 => where조건을 코드로 만드는 인터페이스(JPA조회기법)
+        Specification<Product> specification = new Specification<Product>() {
+            @Override
+            public Predicate toPredicate(Root<Product> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
+                List<Predicate> predicateList = new ArrayList<>();
+                if (searchDto.getProductName() != null) {
+                    predicateList.add(criteriaBuilder.like(root.get("name"), "%" + searchDto.getProductName() + "%"));
+                }
+                if (searchDto.getCategory() != null) {
+                    predicateList.add(criteriaBuilder.equal(root.get("category"), searchDto.getCategory()));
+                }
+                Predicate[] predicatesArr = new Predicate[predicateList.size()];
+                for (int i = 0; i < predicatesArr.length; i++) {
+                    predicatesArr[i] = predicateList.get(i);
+                }
+//                Predicate에는 검색조건들이 담길것이고, 이 Predicate list를 한줄의 predicate로 조립
+                Predicate predicate = criteriaBuilder.and(predicatesArr);
+                return predicate;
+            }
+        };
+        Page<Product> productList = productRepository.findAll(specification, pageable);
+        return productList.map(p->ProductResDto.fromEntity(p));
+
+        }
+
+
+    @Transactional(readOnly = true)
+    public ProductResDto findById(Long id){
+        Product product = productRepository.findById(id).orElseThrow(()->new EntityNotFoundException("상품정보 없음"));
+        return ProductResDto.fromEntity(product);
     }
-//    public Long save(ProductCreateDto dto, MultipartFile profileImage) {
-//        String email = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
-//
-//        Member member = memberRepository.findAllByEmail(email).orElseThrow(() -> new EntityNotFoundException("이메일이 없습니다"));
-//
-//        Product product = dto.toEntity(member);
-//        productRepository.save(product);
-////        if (profileImage != null) {
-////            String fileName = "product-" + product.getId() + "-profileimage-" + profileImage.getOriginalFilename();
-////            PutObjectRequest request = PutObjectRequest.builder()
-////                    .bucket(bucket)
-////                    .key(fileName)
-////                    .contentType(profileImage.getContentType())
-////                    .build();
-////            try {
-////                s3Client.putObject(request, RequestBody.fromBytes(profileImage.getBytes()));
-////            } catch (IOException e) {
-////                throw new RuntimeException(e);
-////            }
-////            String imgUrl = s3Client.utilities().getUrl(a -> a.bucket(bucket).key(fileName)).toExternalForm();
-////            product.updatePorfileImageUrl(imgUrl);
-////        }
-//        return product.getId();
-//    }
-//    public Page<ProductListDto> findByAll(Pageable pageable, ProductSearchDto searchDto){
-//
-//        Specification<Product> specification = new Specification<Product>() {
-//            @Override
-//            public Predicate toPredicate(Root<Product> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
-//                List<Predicate> predicateList = new ArrayList<>();
-//                if (searchDto.getProductName() != null) {
-//                    predicateList.add(criteriaBuilder.like(root.get("productName"), "%" + searchDto.getProductName() + "%"));
-//                }
-//                if (searchDto.getCategory() != null) {
-//                    predicateList.add(criteriaBuilder.equal(root.get("category"), searchDto.getCategory()));
-//                }
-//                Predicate[] predicatesArr = new Predicate[predicateList.size()];
-//                for (int i = 0; i < predicatesArr.length; i++) {
-//                    predicatesArr[i] = predicateList.get(i);
-//                }
-//                Predicate predicate = criteriaBuilder.and(predicatesArr);
-//
-//                return predicate;
-//            }
-//        };
-//        Page<Product> products = productRepository.findAll(specification, pageable);
-//        Page<ProductListDto> dto = products.map(p->ProductListDto.fromEntity(p));
-//        return dto;
-//    }
-//
-//    public ProductDetailDto findById(Long id){
-//        Product product = productRepository.findById(id).orElseThrow(()-> new EntityNotFoundException("상품이 없습니다"));
-//        ProductDetailDto dto = ProductDetailDto.fromEntity(product);
-//
-//        return dto;
-//    }
 }

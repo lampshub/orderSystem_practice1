@@ -10,14 +10,14 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class ProductListDto {
+public class ProductSearchDto {
     private String productName;
-    private int productCount;
+    private String category;
 
-    public ProductListDto fromEntity(Product product){
-        return ProductListDto.builder()
+    public ProductSearchDto fromEntity(Product product){
+        return ProductSearchDto.builder()
                 .productName(product.getName())
-                .productCount() //구매한 개수
+//                .productCount() //구매한 개수
                 .build();
 
 

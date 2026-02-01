@@ -21,7 +21,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
 
-//filterChain
+//filter계층에 대한 로직 수행 - filterChain
 @Configuration
 @EnableMethodSecurity   //PreAuthorize어노테이션을 사용하기 위한 설정 (Controller에서 사용)
 public class SecurityConfig {
@@ -45,8 +45,9 @@ public class SecurityConfig {
                 .httpBasic(AbstractHttpConfigurer::disable)
 //                세션로그인방식 비활성화 (stateless방식)
                 .sessionManagement(a->a.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-//                token을 검증하고, Authentication 객체 생성 => jwtTokenFilter실행 (순서는 Filter->Security->Controller)
+//                token을 검증하고, Authentication 객체 생성 => jwtTokenFilter실행 (순서는 Filter->Security->Controller)  //필터처리
                 .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
+//                예외처리
                 .exceptionHandling(e->e.authenticationEntryPoint(jwtAuthenticationHandler))
 //                지정한 특정 url을 제외한 모든 요청에 대해서 authenticated(인증처리)하겠다 라는 의미   //filter체인으로 돌아오면 여기
                 .authorizeHttpRequests(a->a.requestMatchers("/member/create","/member/doLogin","/product/list").permitAll().anyRequest().authenticated())

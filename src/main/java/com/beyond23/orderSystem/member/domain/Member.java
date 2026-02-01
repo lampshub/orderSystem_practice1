@@ -17,15 +17,15 @@ public class Member extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(nullable = false)
+    private String name;
+    @Column(length = 50, unique = true, nullable = false)
     private String email;
     @Column(nullable = false)
     private String password;
-    private String name;
 
     @Enumerated(EnumType.STRING)
     @Builder.Default
-    private Role role = Role.USER;
+    private Role role = Role.USER;  //디폴트값 설정
 
     @CreationTimestamp
     private LocalDateTime createdTime;

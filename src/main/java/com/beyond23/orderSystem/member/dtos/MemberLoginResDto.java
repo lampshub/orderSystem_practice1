@@ -10,8 +10,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class MemberLoginResDto {
-    private Long accessToken;
-    private Long refreshToken;
+    private String accessToken;
+    private String refreshToken;
 
 
 }

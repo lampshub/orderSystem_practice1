@@ -2,13 +2,11 @@ package com.beyond23.orderSystem.member.service;
 
 import com.beyond23.orderSystem.member.domain.Member;
 import com.beyond23.orderSystem.member.dtos.MemberCreateDto;
-import com.beyond23.orderSystem.member.dtos.MemberDetailDto;
-import com.beyond23.orderSystem.member.dtos.MemberListDto;
-import com.beyond23.orderSystem.member.dtos.MemberLoginDto;
+import com.beyond23.orderSystem.member.dtos.MemberResDto;
+import com.beyond23.orderSystem.member.dtos.MemberLoginReqDto;
 import com.beyond23.orderSystem.member.repository.MemberRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -45,33 +43,35 @@ public class MemberService {
     }
 
     @Transactional(readOnly = true)
-    public List<MemberDetailDto> list(){
-        List<MemberDetailDto> dto = memberRepository.findAll().stream().map(a->MemberDetailDto.fromEntity(a)).collect(Collectors.toList());
-        return dto;
+    public List<MemberResDto> findAll(){
+//        List<MemberResDto> dto = memberRepository.findAll().stream().map(a-> MemberResDto.fromEntity(a)).collect(Collectors.toList());
+//        return dto;
+        return memberRepository.findAll().stream().map(a-> MemberResDto.fromEntity(a)).collect(Collectors.toList());
+
     }
 
-    public MemberDetailDto detail(Long id){
+    public MemberResDto findById(Long id){
         Optional<Member> optMember = memberRepository.findById(id);
         Member member = optMember.orElseThrow(()-> new EntityNotFoundException("찾는 id가 없습니다."));
-        MemberDetailDto dto = MemberDetailDto.fromEntity(member);
-        return dto;
-    }
-    @Transactional(readOnly = true)
-    public MemberDetailDto myinfo( String email) {
-        String email = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString(); //filter에서 가져온 토큰에서 받아온 email
-        Optional<Member> optMember = memberRepository.findByEmail(email);
-        Member member = optMember.orElseThrow(() -> new NoSuchElementException("없는 entity"));
-        MemberDetailDto dto = MemberDetailDto.fromEntity(member);
+        MemberResDto dto = MemberResDto.fromEntity(member);
         return dto;
     }
 
-    public Member login(MemberLoginDto dto) {
+    @Transactional(readOnly = true)
+    public MemberResDto myinfo(String email) {
+        Optional<Member> optMember = memberRepository.findByEmail(email);
+        Member member = optMember.orElseThrow(() -> new EntityNotFoundException("없는 email의 값이 없습니다."));
+        MemberResDto dto = MemberResDto.fromEntity(member);
+        return dto;
+    }
+
+    public Member login(MemberLoginReqDto dto) {
         Optional<Member> optMember = memberRepository.findByEmail(dto.getEmail());
         boolean check = true;
         if (!optMember.isPresent()) {
             check = false;
         } else {
-            if (!passwordEncoder.matches(dto.getPassword(), optMember.get().getPassword())) {
+            if (!passwordEncoder.matches(dto.getPassword(), optMember.get().getPassword())) {   //사용자의 이메일과 입력된 이메일 비교
                 check = false;
             }
         }

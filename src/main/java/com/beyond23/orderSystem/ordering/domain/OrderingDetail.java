@@ -1,6 +1,5 @@
 package com.beyond23.orderSystem.ordering.domain;
 
-import com.beyond23.orderSystem.ordering.domains.Ordering;
 import com.beyond23.orderSystem.product.domains.Product;
 import jakarta.persistence.*;
 import lombok.*;
@@ -13,7 +12,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class orderingDetails {
+public class OrderingDetail {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

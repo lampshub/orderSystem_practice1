@@ -14,6 +14,5 @@ public class CommonErrorDto {
     private int status_code;
     private String error_message;
 
-
 }
 

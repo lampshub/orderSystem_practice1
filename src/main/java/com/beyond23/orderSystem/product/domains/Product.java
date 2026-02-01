@@ -17,23 +17,27 @@ public class Product extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "memberId", foreignKey = @ForeignKey(ConstraintMode.CONSTRAINT), nullable = false)
-    private Member member;
-
     @Column(nullable = false)
     private String name;
     @Column(nullable = false)
-    private int price;
     private String category;
+    private int price;
     @Column(nullable = false)
     private int stockQuantity;
     private String imagePath;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "memberId", foreignKey = @ForeignKey(ConstraintMode.CONSTRAINT), nullable = false)
+    private Member member;
+
+    public void updateProfileImageUrl(String url){
+        this.imagePath = url;
+    }
+
     @CreationTimestamp
     private LocalDateTime createdTime;
 
-    @OneToMany(mappedBy = "member_id", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = )
-    private Member member
+//    @OneToMany(mappedBy = "member_id", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+//    @JoinColumn(name = )
+//    private Member member;
 }

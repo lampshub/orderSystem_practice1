@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class MemberLoginDto {
+public class MemberLoginReqDto {
     @NotBlank(message = "email을 입력해주세요")
     private String email;
     @NotBlank(message = "password를 입력해주세요")
