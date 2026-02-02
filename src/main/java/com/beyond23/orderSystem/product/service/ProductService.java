@@ -73,23 +73,24 @@ public class ProductService {
 
     @Transactional(readOnly = true)
     public Page<ProductResDto> findAll(Pageable pageable, ProductSearchDto searchDto){
+        System.out.println("category : " + searchDto.getCategory());
 //        동적인 검색 조건을 코드로 조립해서 조회하는 방식 => where조건을 코드로 만드는 인터페이스(JPA조회기법)
         Specification<Product> specification = new Specification<Product>() {
             @Override
             public Predicate toPredicate(Root<Product> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
                 List<Predicate> predicateList = new ArrayList<>();
                 if (searchDto.getProductName() != null) {
-                    predicateList.add(criteriaBuilder.like(root.get("name"), "%" + searchDto.getProductName() + "%"));
+                    predicateList.add(criteriaBuilder.like(root.get("name"), "%"+searchDto.getProductName()+"%"));
                 }
                 if (searchDto.getCategory() != null) {
                     predicateList.add(criteriaBuilder.equal(root.get("category"), searchDto.getCategory()));
                 }
-                Predicate[] predicatesArr = new Predicate[predicateList.size()];
-                for (int i = 0; i < predicatesArr.length; i++) {
-                    predicatesArr[i] = predicateList.get(i);
+                Predicate[] predicateArr = new Predicate[predicateList.size()];
+                for (int i=0; i<predicateArr.length; i++){
+                    predicateArr[i] = predicateList.get(i);
                 }
 //                Predicate에는 검색조건들이 담길것이고, 이 Predicate list를 한줄의 predicate로 조립
-                Predicate predicate = criteriaBuilder.and(predicatesArr);
+                Predicate predicate = criteriaBuilder.and(predicateArr);
                 return predicate;
             }
         };

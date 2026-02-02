@@ -35,7 +35,8 @@ public class ProductController {
 
 
     @GetMapping("/list")
-    public ResponseEntity<?> findAll(Pageable pageable,@ModelAttribute ProductSearchDto searchDto){
+    public ResponseEntity<?> findAll(Pageable pageable, @ModelAttribute ProductSearchDto searchDto){
+        System.out.println("dto : " + searchDto);
         Page<ProductResDto> productResDtoList = productService.findAll(pageable, searchDto);
         return ResponseEntity.status(HttpStatus.OK).body(productResDtoList);
     }
@@ -54,24 +55,4 @@ public class ProductController {
 //            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(dto);
 //        }
     }
-
-
-
-//    public Long create(ProductCreateDto dto, @RequestParam(value = "profileImage") MultipartFile profileImage){
-//        return productService.save(dto,profileImage);     //이렇게 해도 id값으로 사용자한테 리턴 ?
-//    }
-//
-//    @GetMapping("/product/list")
-//    public Page<ProductListDto> findByAll(@PageableDefault(size = 10, sort = "id", direction = Sort.Direction.ASC) Pageable pageable, @ModelAttribute ProductSearchDto searchDto){
-//        Page<ProductListDto> dto = productService.findByAll(pageable, searchDto);
-//
-//        return dto;
-//    }
-//
-//    @GetMapping("/product/{id}")
-//    public ProductDetailDto findById(@PathVariable Long id){
-//        ProductDetailDto dto = productService.findById(id);
-//
-//        return dto;
-//    }
 }

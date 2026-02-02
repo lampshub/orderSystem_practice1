@@ -1,5 +1,6 @@
 package com.beyond23.orderSystem.ordering.service;
 
+import com.beyond23.orderSystem.common.service.SseAlarmService;
 import com.beyond23.orderSystem.member.domain.Member;
 import com.beyond23.orderSystem.member.repository.MemberRepository;
 import com.beyond23.orderSystem.ordering.domain.Ordering;
@@ -27,13 +28,15 @@ public class OrderingService {
     private final MemberRepository memberRepository;
     private final OrderDetailRepository orderDetailRepository;
     private final ProductRepository productRepository;
+    private final SseAlarmService sseAlarmService;
 
     @Autowired
-    public OrderingService(OrderingRepository orderingRepository, MemberRepository memberRepository, OrderDetailRepository orderDetailRepository, ProductRepository productRepository) {
+    public OrderingService(OrderingRepository orderingRepository, MemberRepository memberRepository, OrderDetailRepository orderDetailRepository, ProductRepository productRepository, SseAlarmService sseAlarmService) {
         this.orderingRepository = orderingRepository;
         this.memberRepository = memberRepository;
         this.orderDetailRepository = orderDetailRepository;
         this.productRepository = productRepository;
+        this.sseAlarmService = sseAlarmService;
     }
 
 
@@ -57,9 +60,16 @@ public class OrderingService {
 //            orderDetailRepository.save(orderingDetail);
 //        }
 
-//cascaging persist를 사용해서 저장(자식테이블까지 같이 저장)
+//cascading persist를 사용해서 저장(자식테이블까지 같이 저장)
         for(OrderingCreateDto dto : dtoList){
             Product product = productRepository.findById(dto.getProductId()).orElseThrow(()-> new EntityNotFoundException("entity is not found"));
+
+            if(product.getStockQuantity() < dto.getProductCount()) {         //All or Nothing
+                throw new IllegalArgumentException("재고가 부족합니다.");       //재고 사과3, 바나나3 일때, 한주문안에 사과3,바나나5이면 주문전체 rollback
+            }
+
+            product.updateStockQuantity(dto.getProductCount()); //주문시 재고수량 변경
+
             OrderingDetail orderingDetail = OrderingDetail.builder()
                     .ordering(ordering)
                     .product(product)
@@ -68,6 +78,10 @@ public class OrderingService {
             ordering.getOrderingDetailList().add(orderingDetail);   //cascading
         }
         orderingRepository.save(ordering);  //cascading
+
+//        주문성공시 admin 유저에게 알림메시지 정송
+        String message = ordering.getId() + "번 주문이 들어왔습니다.";
+        sseAlarmService.sendMessage("admin@naver.com", email, message);
 
         return ordering.getId();
     }

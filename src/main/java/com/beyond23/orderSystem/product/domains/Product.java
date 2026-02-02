@@ -40,4 +40,10 @@ public class Product extends BaseTimeEntity {
 //    @OneToMany(mappedBy = "member_id", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
 //    @JoinColumn(name = )
 //    private Member member;
+
+//    주문시 기존수량-주문수량 으로 재고 변경
+    public void updateStockQuantity(int orderQuantity){
+        this.stockQuantity = this.stockQuantity-orderQuantity;
+    }
+
 }
