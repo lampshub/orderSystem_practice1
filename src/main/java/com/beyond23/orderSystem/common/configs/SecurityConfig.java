@@ -50,7 +50,16 @@ public class SecurityConfig {
 //                예외처리
                 .exceptionHandling(e->e.authenticationEntryPoint(jwtAuthenticationHandler))
 //                지정한 특정 url을 제외한 모든 요청에 대해서 authenticated(인증처리)하겠다 라는 의미   //filter체인으로 돌아오면 여기
-                .authorizeHttpRequests(a->a.requestMatchers("/member/create","/member/doLogin","/product/list","/member/refresh-at").permitAll().anyRequest().authenticated())
+                .authorizeHttpRequests(a->a.requestMatchers(
+                        "/member/create",
+                        "/member/doLogin",
+                        "/product/list",
+                        "/member/refresh-at",
+//                        swagger사용을 위한 인증예외처리
+                        "/v3/api-docs/**",
+                        "/swagger-ui/**",
+                        "/swagger-ui.html")
+                        .permitAll().anyRequest().authenticated())
                 .build();
     }
 

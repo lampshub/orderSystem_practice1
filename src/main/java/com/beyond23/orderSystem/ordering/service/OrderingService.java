@@ -40,8 +40,8 @@ public class OrderingService {
     }
 
 
-//    1. ordering 테이블의 data 저장
-//    2. orderDatail에 n개 저장
+//    1. ordering 테이블에 data 저장
+//    2. orderDetail에 n개 저장
     public Long create(List<OrderingCreateDto> dtoList){
         String email = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
         Member member = memberRepository.findByEmail(email).orElseThrow(()->new EntityNotFoundException("member is not found"));
@@ -79,9 +79,12 @@ public class OrderingService {
         }
         orderingRepository.save(ordering);  //cascading
 
-//        주문성공시 admin 유저에게 알림메시지 정송
+//        주문성공시 admin 유저에게 알림메시지 전송
         String message = ordering.getId() + "번 주문이 들어왔습니다.";
+//        메세지 전파
         sseAlarmService.sendMessage("admin@naver.com", email, message);
+////        알림DB저장 시, 따로 설계해줘야함
+//        alarmRepository.save(alarm객체)
 
         return ordering.getId();
     }

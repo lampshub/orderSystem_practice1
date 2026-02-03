@@ -7,6 +7,7 @@ import com.beyond23.orderSystem.member.domain.Member;
 import com.beyond23.orderSystem.member.dtos.*;
 import com.beyond23.orderSystem.member.repository.MemberRepository;
 import com.beyond23.orderSystem.member.service.MemberService;
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,6 +34,9 @@ public class MemberController {
 //    create, doLogin, list, myinfo, detail/1
 
     @PostMapping("/create")
+    @Operation( // swagger 에 안내문구 입력
+            summary = "회원가입", description = "이메일, 비밀번호를 통한 회원가입"
+    )
     public ResponseEntity<?> create(@RequestBody MemberCreateDto dto){  //json형식
         Long memberId = memberService.save(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(memberId);

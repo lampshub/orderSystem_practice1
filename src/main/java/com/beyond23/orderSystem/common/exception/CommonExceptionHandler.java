@@ -2,6 +2,7 @@ package com.beyond23.orderSystem.common.exception;
 
 
 import com.beyond23.orderSystem.common.dtos.CommonErrorDto;
+import io.swagger.v3.oas.annotations.Hidden;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authorization.AuthorizationDeniedException;
@@ -14,6 +15,7 @@ import java.util.NoSuchElementException;
 
 //Controller 어노테이션이 붙어있는 모든 클래스의 예외를 아래 클래스에서 인터셉팅(가로채기).
 @RestControllerAdvice   //예외를 캐치하는 Controller
+@Hidden //swagger에서 제외 (이걸 제외한 모든  Controller 가 ui 로 만들어짐.
 public class CommonExceptionHandler {
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<?> illegal(IllegalArgumentException e) {

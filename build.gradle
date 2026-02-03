@@ -55,6 +55,9 @@ dependencies {
 //    redis 연결작업을 위한 의존성
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
+//    swagger 사용하기위한 의존성
+//    접속 url : http://localhost:8080/swagger-ui.html
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0'
 
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'

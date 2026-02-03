@@ -27,8 +27,13 @@ public class SseController {
         SseEmitter sseEmitter = new SseEmitter(60 * 60 * 1000L);   //1시간 유효시간
         sseEmitterRegistry.addSseEmitter(email, sseEmitter); //sseEmitterRegistry 싱글톤객체에 저장됨.
         sseEmitter.send(SseEmitter.event().name("connect").data("연결완료"));
-        return sseEmitter;
+        return sseEmitter; //여기서 connect요청한 사람은 연결을 지속적으로 받으며 알람을 받게됨(주문시 알람받음)
     }
 
+    @GetMapping("/disconnect")
+    public void disconnect() throws IOException {
+        String email = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
+        sseEmitterRegistry.removeEmitter(email);
+    }
 
 }

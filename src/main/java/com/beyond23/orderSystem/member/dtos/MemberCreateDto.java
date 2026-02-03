@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class MemberCreateDto {
     @NotBlank(message = "이름을 입력해주세요")
-    private Long name;
+    private String name;
     @NotBlank(message = "email을 입력해주세요")
     private String email;
     @NotBlank(message = "password를 입력해주세요")
@@ -23,7 +23,7 @@ public class MemberCreateDto {
 
     public Member toEntity(String encodedPw){
         return Member.builder()
-                .id(this.name)
+                .name(this.name)
                 .email(this.email)
                 .password(encodedPw)
                 .build();

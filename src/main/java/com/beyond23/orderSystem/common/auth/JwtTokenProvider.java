@@ -96,7 +96,7 @@ public class JwtTokenProvider { //시스템 실행되자마자 싱글톤객체�
             .signWith(secret_key_rt)
             .compact();
 //     rt토큰을 redis에 저장 (터미널창에서 key *, get test@naver.com 로 확인할수있음)
-//     opsForValue : : 일반 String 자료구조. opsForSet(또는 Zset 또는 List 등) 존재.
+//     opsForValue : 일반 String 자료구조. opsForSet(또는 Zset 또는 List 등) 존재.
 //    redisTemplate.opsForValue().set(member.getEmail(), token);  //key:email, value:token
     redisTemplate.opsForValue().set(member.getEmail(), token, expirationRt, TimeUnit.MINUTES);  //3000분 ttl(유효기간 설정)
     return token;
