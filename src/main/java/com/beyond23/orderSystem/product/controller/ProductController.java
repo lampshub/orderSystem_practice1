@@ -4,6 +4,7 @@ import com.beyond23.orderSystem.common.dtos.CommonErrorDto;
 import com.beyond23.orderSystem.product.dtos.ProductCreateDto;
 import com.beyond23.orderSystem.product.dtos.ProductResDto;
 import com.beyond23.orderSystem.product.dtos.ProductSearchDto;
+import com.beyond23.orderSystem.product.dtos.ProductUpdateDto;
 import com.beyond23.orderSystem.product.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -19,6 +20,7 @@ import java.util.NoSuchElementException;
 @RequestMapping("/product")
 public class ProductController {
     private final ProductService productService;
+
     @Autowired
     public ProductController(ProductService productService) {
         this.productService = productService;
@@ -28,14 +30,14 @@ public class ProductController {
 
     @PostMapping("/create")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> create(@ModelAttribute ProductCreateDto dto){
+    public ResponseEntity<?> create(@ModelAttribute ProductCreateDto dto) {
         Long productId = productService.save(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(productId);
     }
 
 
     @GetMapping("/list")
-    public ResponseEntity<?> findAll(Pageable pageable, @ModelAttribute ProductSearchDto searchDto){
+    public ResponseEntity<?> findAll(Pageable pageable, @ModelAttribute ProductSearchDto searchDto) {
         System.out.println("dto : " + searchDto);
         Page<ProductResDto> productResDtoList = productService.findAll(pageable, searchDto);
         return ResponseEntity.status(HttpStatus.OK).body(productResDtoList);
@@ -45,8 +47,8 @@ public class ProductController {
     @GetMapping("/detail/{id}")
     public ResponseEntity<?> findById(@PathVariable Long id) {
 //        try {
-            ProductResDto dto = productService.findById(id);
-            return ResponseEntity.status(HttpStatus.OK).body(dto);
+        ProductResDto dto = productService.findById(id);
+        return ResponseEntity.status(HttpStatus.OK).body(dto);
 //        } catch (NoSuchElementException e) {
 //            CommonErrorDto dto = CommonErrorDto.builder()
 //                    .status_code(404)
@@ -54,5 +56,11 @@ public class ProductController {
 //                    .build();
 //            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(dto);
 //        }
+    }
+
+    @PutMapping("update/{id}")
+    public ResponseEntity<?> update(@PathVariable Long id, @ModelAttribute ProductUpdateDto dto) {
+        productService.update(id, dto);
+        return ResponseEntity.status(HttpStatus.OK).body(null);
     }
 }

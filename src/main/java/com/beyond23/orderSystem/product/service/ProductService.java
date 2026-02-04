@@ -6,6 +6,7 @@ import com.beyond23.orderSystem.product.domains.Product;
 import com.beyond23.orderSystem.product.dtos.ProductCreateDto;
 import com.beyond23.orderSystem.product.dtos.ProductResDto;
 import com.beyond23.orderSystem.product.dtos.ProductSearchDto;
+import com.beyond23.orderSystem.product.dtos.ProductUpdateDto;
 import com.beyond23.orderSystem.product.repository.ProductRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -13,10 +14,12 @@ import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,19 +34,22 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @Service
+@Transactional
 public class ProductService {
     private final ProductRepository productRepository;
     private final MemberRepository memberRepository;
     private final S3Client s3Client;
+    private final RedisTemplate<String,String> redisTemplate;
 //    yml파일에서 bucket1 정보 연결
     @Value("${aws.s3.bucket1}")
     private String bucket;
 
     @Autowired
-    public ProductService(ProductRepository productRepository, MemberRepository memberRepository, S3Client s3Client) {
+    public ProductService(ProductRepository productRepository, MemberRepository memberRepository, S3Client s3Client,@Qualifier("stockInventory") RedisTemplate<String, String> redisTemplate) {
         this.productRepository = productRepository;
         this.memberRepository = memberRepository;
         this.s3Client = s3Client;   //이미지등록시 필요
+        this.redisTemplate = redisTemplate;
     }
 
 
@@ -66,7 +72,11 @@ public class ProductService {
             }
             String imgUrl = s3Client.utilities().getUrl(a->a.bucket(bucket).key(fileName)).toExternalForm();
             product.updateProfileImageUrl(imgUrl);
+            System.out.println(imgUrl);
         }
+
+//        동시성문제 해결을 위해 상품등록시 redis에 재고세팅
+        redisTemplate.opsForValue().set(String.valueOf(product.getId()), String.valueOf(product.getStockQuantity()));
         return product.getId();
     }
 
@@ -104,5 +114,43 @@ public class ProductService {
     public ProductResDto findById(Long id){
         Product product = productRepository.findById(id).orElseThrow(()->new EntityNotFoundException("상품정보 없음"));
         return ProductResDto.fromEntity(product);
+    }
+
+    public void update (Long id, ProductUpdateDto dto){
+        Product product = productRepository.findById(id).orElseThrow(()->new EntityNotFoundException("상품정보 없음"));
+        product.updateProduct(dto);
+
+        if(dto.getProductImage()!=null){
+//            이미지를 수정하는 경우 : 삭제 후 추가
+//            기존이미지를 파일명으로 삭제
+            if(product.getImagePath() !=null){      //기존 이미지가 null이 아니면 삭제
+                String imgUrl = product.getImagePath();
+                String fileName = imgUrl.substring(imgUrl.lastIndexOf("/")+1);
+                s3Client.deleteObject(a->a.bucket(bucket).key(fileName));
+            }
+//            신규이미지를 등록
+            String newFileName = "product-" + product.getId() + "-" + dto.getProductImage().getOriginalFilename();
+//      aws s3버킷에 파일 업로드를 할 요청정보를 담는 객체
+            PutObjectRequest request = PutObjectRequest.builder()
+                    .bucket(bucket)
+                    .key(newFileName)  //이름이 중복되면 엎어씌어짐
+                    .contentType(dto.getProductImage().getContentType())
+                    .build();
+            try{
+                s3Client.putObject(request, RequestBody.fromBytes(dto.getProductImage().getBytes()));
+            }catch (IOException e){
+                throw new RuntimeException(e);
+            }
+            String newImgUrl = s3Client.utilities().getUrl(a->a.bucket(bucket).key(newFileName)).toExternalForm();
+            product.updateProfileImageUrl(newImgUrl);
+
+        } else {
+        //            이미지를 삭제하고자 하는 경우
+        if (product.getImagePath() != null) {      //기존 이미지가 null이 아니면 삭제
+            String imgUrl = product.getImagePath();
+            String fileName = imgUrl.substring(imgUrl.lastIndexOf("/") + 1);
+            s3Client.deleteObject(a -> a.bucket(bucket).key(fileName));
+            }
+        }
     }
 }

@@ -124,7 +124,5 @@ public class JwtTokenProvider { //시스템 실행되자마자 싱글톤객체�
         }
         return member;
     }
-
-
 }
 

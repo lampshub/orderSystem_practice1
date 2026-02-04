@@ -14,7 +14,7 @@ import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
-//스프링 시작이 되면 많은 빈 객체가 생성 -> 이중 하나를 redis 빈 객체로 만듬 -> redis를 사용할떄마다 빈객체를 주입받아 사용
+//스프링 시작이 되면 많은 빈 객체가 생성 -> 이중 하나를 redis 빈 객체로 만듬 -> redis를 사용할때마다 빈객체를 주입받아 사용
 @Configuration
 public class RedisConfig {  //팀프로젝트시 그대로 복사하여 사용하면 됨
     @Value("${spring.redis.host}")
@@ -32,7 +32,7 @@ public class RedisConfig {  //팀프로젝트시 그대로 복사하여 사용�
         configuration.setPort(port);
         configuration.setDatabase(0);    //db번호     //현대적으로는 0번db만 거의 사용하고, host를 다르게 두고 사용을 많이함.
 
-        return new LettuceConnectionFactory(); // 인터페이스 RedisConnectionFactory의 구현체 :LettuceConnectionFactory
+        return new LettuceConnectionFactory(configuration); // 인터페이스 RedisConnectionFactory의 구현체 :LettuceConnectionFactory
     }
 
 //    템플릿 빈객체 (자료구조 설계)
@@ -57,7 +57,7 @@ public class RedisConfig {  //팀프로젝트시 그대로 복사하여 사용�
         configuration.setPort(port);
         configuration.setDatabase(1);
 
-        return new LettuceConnectionFactory();
+        return new LettuceConnectionFactory(configuration);
     }
 
     @Bean
@@ -78,7 +78,7 @@ public class RedisConfig {  //팀프로젝트시 그대로 복사하여 사용�
         configuration.setHostName(host);
         configuration.setPort(port);
 //      db 에 값을 저장하는 기능이 아니므로, db에 의존적이지 않음
-        return new LettuceConnectionFactory();
+        return new LettuceConnectionFactory(configuration);
     }
 
     @Bean
@@ -91,7 +91,7 @@ public class RedisConfig {  //팀프로젝트시 그대로 복사하여 사용�
         return redisTemplate;
     }
 
-//    redis 리스너(subscribe) 객체 => 메세지를 받음
+//    redis 리스너(subscribe) 객체 => 메세지를 받는 객체
 //    호출 구조 : RedisMessageListenerContainer -> MessageListenerAdapter -> SseAlarmService(MessageListener)
     @Bean
     @Qualifier("ssePubSub")
@@ -110,6 +110,5 @@ public class RedisConfig {  //팀프로젝트시 그대로 복사하여 사용�
 //        채널로부터 수신되는 message처리를 SseAlarmService의 onMessage메서도로 위임
         return new MessageListenerAdapter(sseAlarmService, "onMessage");
     }
-
 
 }

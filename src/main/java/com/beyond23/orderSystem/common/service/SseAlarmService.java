@@ -36,7 +36,7 @@ public class SseAlarmService implements MessageListener {
                 .build();
 
         try {
-            SseEmitter sseEmitter = sseEmitterRegistry.getEmitter(receiver); //receiver 이메일로 EmitterMap찾음
+            SseEmitter sseEmitter = sseEmitterRegistry.getEmitter(receiver); //receiver 이메일로 EmitterMap에 넣음
             String data = objectMapper.writeValueAsString(dto); //dto 직렬화
 //            만약 emitter객체가 현재 서버에 있으면, 바로 알림 발송. 그렇지 않으면 redis pub/sub활용
             if(sseEmitter != null){
@@ -61,7 +61,7 @@ public class SseAlarmService implements MessageListener {
         try {                                       //여기 message에 publish의 정보를 담은 객체
             SseMessageDto dto = objectMapper.readValue(message.getBody(), SseMessageDto.class); //dto로 파싱
             String data = objectMapper.writeValueAsString(dto);  //dto 직렬화
-            SseEmitter sseEmitter = sseEmitterRegistry. getEmitter(dto.getReceiver());
+            SseEmitter sseEmitter = sseEmitterRegistry. getEmitter(dto.getReceiver());  //sseEmitter객체로 변환
 //            해당 서버에 receiver가 emitter객체가 있으면 send
              if(sseEmitter != null){
                  sseEmitter.send(SseEmitter.event().name("ordered").data(data));    //다시 json으로 직렬화 해서 보냄.

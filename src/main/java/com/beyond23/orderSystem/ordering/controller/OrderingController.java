@@ -25,7 +25,6 @@ public class OrderingController {
     @PostMapping("/create")
     public ResponseEntity<?> create(@RequestBody List<OrderingCreateDto> dtoList) {
         Long id = orderingService.create(dtoList);
-
         return ResponseEntity.status(HttpStatus.CREATED).body(id);
     }
 

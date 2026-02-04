@@ -2,10 +2,12 @@ package com.beyond23.orderSystem.product.domains;
 
 import com.beyond23.orderSystem.common.domain.BaseTimeEntity;
 import com.beyond23.orderSystem.member.domain.Member;
+import com.beyond23.orderSystem.product.dtos.ProductUpdateDto;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
+import java.security.PrivateKey;
 import java.time.LocalDateTime;
 
 @Entity
@@ -44,6 +46,13 @@ public class Product extends BaseTimeEntity {
 //    주문시 기존수량-주문수량 으로 재고 변경
     public void updateStockQuantity(int orderQuantity){
         this.stockQuantity = this.stockQuantity-orderQuantity;
+    }
+
+    public void updateProduct(ProductUpdateDto dto){
+        this.name = dto.getName();
+        this.price = dto.getPrice();
+        this.category = dto.getCategory();
+        this.stockQuantity = dto.getStockQuantity();
     }
 
 }
